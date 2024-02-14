@@ -1,0 +1,47 @@
+.grid {
+    border: 10px;
+    border-color: black;
+}
+
+.color{
+  height: 20px;
+  width: 20px;
+  border: 1px solid black;
+  margin-right: 5px;
+  margin-left: 15px;
+}
+
+.legend{
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+}
+
+.nav{
+  padding: 10px;
+  background-color: greenyellow;
+  font-family: Verdana;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+p{
+  display: inline-block;
+  margin-inline: 10px;
+}
+
+button{
+  font-family: inherit;
+  font-size: 20px;
+  margin-inline: 10px;
+}
+
+h1{
+  display: inline-block;
+  margin-inline: 10px;
+}
+
+body{
+  background-color: rgb(218, 218, 218);
+}
