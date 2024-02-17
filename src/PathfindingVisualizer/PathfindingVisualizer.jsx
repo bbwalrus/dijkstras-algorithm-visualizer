@@ -4,10 +4,13 @@ import {dijkstra, getNodesInShortestPathOrder} from '../Algorithms/dijkstra';
 
 import './PathfindingVisualizer.css';
 
-const START_NODE_ROW = Math.floor((window.innerHeight / 26 - 3) * .50);
-const START_NODE_COL = Math.floor((window.innerWidth / 26 - 3) * .35);
-const FINISH_NODE_ROW = Math.floor((window.innerHeight / 26 - 3) * .50);
-const FINISH_NODE_COL = Math.floor((window.innerWidth / 26 - 3) * .65);
+let START_NODE_ROW = Math.floor((window.innerHeight / 26 - 3) * .50);
+let START_NODE_COL = Math.floor((window.innerWidth / 26 - 3) * .35);
+let FINISH_NODE_ROW = Math.floor((window.innerHeight / 26 - 3) * .50);
+let FINISH_NODE_COL = Math.floor((window.innerWidth / 26 - 3) * .65);
+let wall = false;
+let start = false;
+let end = false;
 
 export default class PathfindingVisualizer extends Component {
   constructor() {
@@ -24,14 +27,37 @@ export default class PathfindingVisualizer extends Component {
   }
 
   handleMouseDown(row, col) {
-    const newGrid = getNewGridWithWallToggled(this.state.grid, row, col);
-    this.setState({grid: newGrid, mouseIsPressed: true});
+    if (wall) {
+      const newGrid = getNewGridWithWallToggled(this.state.grid, row, col);
+      this.setState({grid: newGrid, mouseIsPressed: true});
+    }
+    else if(start) {
+      // Make new grid that is start
+      const replaceOld = getNewGridAsStartNode(this.state.grid, START_NODE_ROW, START_NODE_COL);
+      this.setState({grid: replaceOld, mouseIsPressed: true});
+      const newGrid = getNewGridAsStartNode(this.state.grid, row, col);
+      // Update our start node row col for algo
+      START_NODE_ROW = row;
+      START_NODE_COL = col;
+      this.setState({grid: newGrid, mouseIsPressed: true});
+    }
+    // Same as start
+    else if(end) {
+      const replaceOld = getNewGridAsEndNode(this.state.grid, FINISH_NODE_ROW, FINISH_NODE_COL);
+      this.setState({grid: replaceOld, mouseIsPressed: true});
+      const newGrid = getNewGridAsEndNode(this.state.grid, row, col);
+      FINISH_NODE_ROW = row;
+      FINISH_NODE_COL = col;
+      this.setState({grid: newGrid, mouseIsPressed: true});
+    }
   }
 
   handleMouseEnter(row, col) {
     if (!this.state.mouseIsPressed) return;
-    const newGrid = getNewGridWithWallToggled(this.state.grid, row, col);
-    this.setState({grid: newGrid});
+    if (wall) {
+      const newGrid = getNewGridWithWallToggled(this.state.grid, row, col);
+      this.setState({grid: newGrid});
+    }
   }
 
   handleMouseUp() {
@@ -73,16 +99,20 @@ export default class PathfindingVisualizer extends Component {
     this.animateDijkstra(visitedNodesInOrder, nodesInShortestPathOrder);
   }
 
+  toggleWall(){
+    wall = !wall;
+  }
+  
+  toggleStart(){
+    start = !start;
+  }
+
+  toggleEnd(){
+    end = !end;
+  }
+
   reset() {
     window.location.reload();
-  }
-
-  setStart() {
-
-  }
-
-  setEnd() {
-    
   }
 
   render() {
@@ -100,8 +130,11 @@ export default class PathfindingVisualizer extends Component {
             <button onClick={() => this.reset()}>
             Reset
             </button>
-            <p>
-                Click grid spaces to add and remove walls
+            <br/>
+            <p class = "desc">
+                Click grid spaces to change them based on the slider selected
+                <br/>
+                Walls can be drawn by holding down click
                 <br/>
                 Reset after window resize or if grids aren't aligned
             </p>
@@ -113,9 +146,32 @@ export default class PathfindingVisualizer extends Component {
                 <div class = "color" style = {{backgroundColor: "rgba(0, 190, 218, 0.75)"}}/>
                 - Explored node
                 <div class = "color" style = {{backgroundColor: "rgb(255, 254, 106)"}}/>
-                - Fastest Path
+                - Shortest Path
                 <div class = "color" style = {{backgroundColor: "rgb(12, 53, 71"}}/>
                 - Wall
+            </div>
+            <div class = "switches">
+              <label class="switch">
+                <input type="checkbox" onChange = {() => this.toggleWall()}/>
+                <span class="slider"></span>
+              </label>
+              <div class = "switchtext">
+                Wall
+              </div>
+              <label class="switch">
+                <input type="checkbox" onChange = {() => this.toggleStart()}/>
+                <span class="slider"></span>
+              </label>
+              <div class = "switchtext">
+                Start Node
+              </div>
+              <label class="switch">
+                <input type="checkbox" onChange = {() => this.toggleEnd()}/>
+                <span class="slider"></span>
+              </label>
+              <div class = "switchtext">
+                End Node
+              </div>
             </div>
         </div>
         <div className="grid">
@@ -186,3 +242,28 @@ const getNewGridWithWallToggled = (grid, row, col) => {
   newGrid[row][col] = newNode;
   return newGrid;
 };
+
+const getNewGridAsStartNode = (grid, row, col) => {
+  // Make copy of grid
+  const newGrid = grid.slice();
+  // Assign node to the node in the grid we are trying to modify
+  const node = newGrid[row][col];
+  // Make a new node to replace the node we clicked
+  const newNode = {
+    ...node,
+    isStart: !node.isStart,
+  };
+  newGrid[row][col] = newNode;
+  return newGrid;
+}
+
+const getNewGridAsEndNode = (grid, row, col) => {
+  const newGrid = grid.slice();
+  const node = newGrid[row][col];
+  const newNode = {
+    ...node,
+    isFinish: !node.isFinish,
+  };
+  newGrid[row][col] = newNode;
+  return newGrid;
+}
